@@ -9,10 +9,6 @@ import com.example.fulbot.services.CalculationService;
 import com.example.fulbot.services.KeyboardMarkupMaker;
 import com.example.fulbot.cache.UserDataCache;
 import com.example.fulbot.repositories.UserRepository;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +19,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -158,16 +153,8 @@ public class MessageHandler {
 
                 break;
             case ASK_PHONE:
-                ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-                Validator validator = validatorFactory.getValidator();
-                user.setPhone(usersAnswer);
-                Set<ConstraintViolation<User>> errors = validator.validate(user);
-                StringBuilder stringBuilder = new StringBuilder();
-                for(ConstraintViolation<User> error: errors){
-                    stringBuilder.append(error.getMessage());
-                }
-                String errorMessage = stringBuilder.toString();
-                if (errorMessage.isEmpty()){
+                if (isValidPhoneNumber(usersAnswer)){
+                    user.setPhone(usersAnswer);
                     userRepository.save(user);
                     userDataCache.setUsersCurrentBotState(chatId, BotState.FINISH);
                     try {
@@ -180,13 +167,12 @@ public class MessageHandler {
                     userDataCache.deleteUserCalculation(chatId);
 
                 }
-                    else {
-                        replyToUser = new SendMessage(String.valueOf(chatId), errorMessage +
-                                "Повторите ввод или выберите дальнейшее действие:");
-                        replyToUser.setReplyMarkup(keyboardMarkupMaker.getInlineMessageButtons(
+                else {
+                    replyToUser = new SendMessage(String.valueOf(chatId),
+                            "Введите корректный номер телефона или выберите дальнейшее действие:");
+                    replyToUser.setReplyMarkup(keyboardMarkupMaker.getInlineMessageButtons(
                             "Начать расчет заново", "Начало", "Отбой", "Отбой"));
                 }
-
                 break;
             case SHOW_CALCULATIONS:
                 replyToUser = showCalculations(inputMsg);
@@ -203,6 +189,8 @@ public class MessageHandler {
         userDataCache.saveUserCalculation(chatId, calculation);
         return replyToUser;
     }
-
+    private boolean isValidPhoneNumber (String phone) {
+        return phone.matches("^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$");
+    }
 
 }

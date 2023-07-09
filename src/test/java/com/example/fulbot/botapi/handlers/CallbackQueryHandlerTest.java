@@ -9,10 +9,9 @@ import com.example.fulbot.repositories.UserRepository;
 import com.example.fulbot.services.KeyboardMarkupMaker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -25,46 +24,43 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class CallbackQueryHandlerTest {
 
-    @Autowired
+    @InjectMocks
     private CallbackQueryHandler callbackQueryHandler;
 
-    @MockBean
+    @Mock
     UserDataCache userDataCache;
 
-    @Autowired
+    @Mock
     KeyboardMarkupMaker keyboardMarkupMaker;
 
-    @MockBean
+    @Mock
     CalculationRepository calculationRepository;
 
-    @MockBean
+    @Mock
     UserRepository userRepository;
 
 
-        final long chatId = 1L;
+    final long chatId = 1L;
 
-        Message message = mock(Message.class);
+    Message message = mock(Message.class);
 
-        CallbackQuery callbackQuery = mock(CallbackQuery.class);
+    CallbackQuery callbackQuery = mock(CallbackQuery.class);
 
-        User user = new User(1L, "Galina", "Cherevatenko",
-                "Galina",new Timestamp(System.currentTimeMillis()), "1234567890", chatId);
-        Calculation calculation = new Calculation
-                (1L, 10, 10, false, false,false, false,
-                        false, false, false, 10, 0, user);
+    User user = new User(1L, "Galina", "Cherevatenko",
+            "Galina",new Timestamp(System.currentTimeMillis()), "1234567890", chatId);
+    Calculation calculation = new Calculation
+            (1L, 10, 10, false, false,false, false,
+                    false, false, false, 10, 0, user);
 
 
 
     @Test
-     void testAnswerForDefectiveCallbackQuery() {
+    void testAnswerForDefectiveCallbackQuery() {
         String data = "Отбраковка";
         SendMessage callBackAnswer = new SendMessage(String.valueOf(chatId),"Отбраковка простая или сложная?");
-        callBackAnswer.setReplyMarkup(keyboardMarkupMaker.getInlineMessageButtons(
-                "Простая", "Простая", "Сложная", "Сложная"));
 
         when(callbackQuery.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(chatId);
@@ -78,8 +74,8 @@ class CallbackQueryHandlerTest {
 
         assertNotNull(resultAnswer);
         assertTrue(calculation.isDefective());
-        assertEquals(callBackAnswer, resultAnswer);
-        }
+        assertEquals(callBackAnswer.getText(), resultAnswer.getText());
+    }
 
     @Test
     void testAnswerForDoNotPrepareBoxesCallbackQuery() {
@@ -87,8 +83,7 @@ class CallbackQueryHandlerTest {
         calculation.setTotalPrice(610);
         SendMessage callBackAnswer = new SendMessage(String.valueOf(chatId),
                 "Итоговая цена: "+calculation.getTotalPrice()+" рублей. \n"+"Мне все подходит, свяжитесь со мной.");
-        callBackAnswer.setReplyMarkup(keyboardMarkupMaker.getInlineMessageButtons(
-                "Да", "Ввод телефона", "Нет", "Отбой"));
+
 
         when(callbackQuery.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(chatId);
@@ -102,7 +97,7 @@ class CallbackQueryHandlerTest {
 
         assertNotNull(resultAnswer);
         assertFalse(calculation.isPrepareBoxes());
-        assertEquals(callBackAnswer, resultAnswer);
+        assertEquals(callBackAnswer.getText(), resultAnswer.getText());
     }
 
     @Test

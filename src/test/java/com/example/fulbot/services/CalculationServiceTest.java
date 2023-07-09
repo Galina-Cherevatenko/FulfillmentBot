@@ -6,10 +6,9 @@ import com.example.fulbot.repositories.CalculationRepository;
 import com.example.fulbot.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.sql.Timestamp;
@@ -23,17 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class CalculationServiceTest {
 
-    @Autowired
+    @InjectMocks
     CalculationService calculationService;
 
-    @MockBean
+    @Mock
     CalculationRepository calculationRepository;
 
-    @MockBean
+    @Mock
     UserRepository userRepository;
 
     final long chatId = 1L;
@@ -56,7 +54,7 @@ class CalculationServiceTest {
         List<Calculation> calculations = new ArrayList<>(Arrays.asList(calculation1, calculation2));
 
         when(message.getChatId()).thenReturn(chatId);
-        when(userRepository.findByChatId(chatId)).thenReturn(Optional.of(user1));;
+        when(userRepository.findByChatId(chatId)).thenReturn(Optional.of(user1));
         when(calculationRepository.findByUser(user1)).thenReturn(calculations);
 
         List<Calculation> resultList = calculationService.findAllByUser(message);

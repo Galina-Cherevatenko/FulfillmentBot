@@ -4,10 +4,9 @@ import com.example.fulbot.botapi.handlers.CallbackQueryHandler;
 import com.example.fulbot.botapi.handlers.MessageHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -18,16 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class TelegramFacadeTest {
-    @Autowired
+    @InjectMocks
     TelegramFacade telegramFacade;
 
-    @MockBean
+    @Mock
     private MessageHandler messageHandler;
 
-    @MockBean
+    @Mock
     private CallbackQueryHandler callbackQueryHandler;
 
     Message message = mock(Message.class);
